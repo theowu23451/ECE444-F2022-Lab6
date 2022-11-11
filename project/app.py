@@ -1,4 +1,5 @@
 from pathlib import Path
+from functools import wraps
 
 from flask import Flask, g, render_template, request, session, flash, redirect, url_for, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -57,6 +58,17 @@ def logout():
     return redirect(url_for('index'))
 
 
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            flash('Please log in.')
+            return jsonify({'status': 0, 'message': 'Please log in.'}, 401)
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @app.route('/add', methods=['POST'])
 def add_entry():
     """Add new post to database."""
@@ -70,6 +82,7 @@ def add_entry():
 
 
 @app.route('/delete/<post_id>', methods=['GET'])
+@login_required
 def delete_entry(post_id):
     """Delete post from database"""
     result = {'status': 0, 'message': 'Error'}
@@ -90,6 +103,7 @@ def search():
     if query:
         return render_template('search.html', entries=entries, query=query)
     return render_template('search.html')
+
 
 if __name__ == "__main__":
     app.run()
