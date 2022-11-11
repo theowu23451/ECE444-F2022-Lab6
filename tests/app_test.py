@@ -1,5 +1,4 @@
 import pytest
-import os
 import json
 from pathlib import Path
 
@@ -15,15 +14,15 @@ def client():
     app.config["DATABASE"] = BASE_DIR.joinpath(TEST_DB)
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{BASE_DIR.joinpath(TEST_DB)}"
 
-    db.create_all() # Setup database
-    yield app.test_client() # Tests run here
-    db.drop_all() # Teardown
+    db.create_all()  # Setup database
+    yield app.test_client()  # Tests run here
+    db.drop_all()  # Teardown
 
 
 def login(client, username, password):
     """Login helper function"""
     return client.post(
-        "/login", 
+        "/login",
         data=dict(username=username, password=password),
         follow_redirects=True,
     )
