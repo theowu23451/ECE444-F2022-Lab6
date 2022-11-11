@@ -1,3 +1,5 @@
+import os
+
 from pathlib import Path
 from functools import wraps
 
@@ -12,7 +14,13 @@ DATABASE = "flaskr.db"
 USERNAME = "admin"
 PASSWORD = "admin"
 SECRET_KEY = "change_me"
-SQLALCHEMY_DATABASE_URI = f'sqlite:///{Path(basedir).joinpath(DATABASE)}'
+
+url = os.getenv('DATABASE_URL', f'sqlite:///{Path(basedir).joinpath(DATABASE)}')
+
+if url.startswith("postgres://"):
+    url = url.replace("postgres://", "postgresql://", 1)
+
+SQLALCHEMY_DATABASE_URI = url
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Create a new Flask App
@@ -64,7 +72,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if not session.get('logged_in'):
             flash('Please log in.')
-            return jsonify({'status': 0, 'message': 'Please log in.'}, 401)
+            return jsonify({'status': 0, 'message': 'Please log in.'}), 401
         return f(*args, **kwargs)
     return decorated_function
 
